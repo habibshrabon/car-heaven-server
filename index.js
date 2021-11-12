@@ -75,21 +75,16 @@ async function run() {
 
     //Post review
     app.post("/review", async (req, res) => {
-      const product = req.body;
-
-      const result = await reviewCollection.insertOne(product);
-      console.log(result);
+      const order = req.body;
+      const result = await reviewCollection.insertOne(order);
       res.json(result);
     });
 
-    //get review
+    //GET review API
     app.get("/review", async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
-      console.log(query);
-      const cursor = reviewCollection.find(query);
+      const cursor = reviewCollection.find({});
       const review = await cursor.toArray();
-      res.json(review);
+      res.send(review);
     });
 
     //DELETE API
