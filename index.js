@@ -23,6 +23,7 @@ async function run() {
     const productCollection = database.collection("products");
     const orderCollection = database.collection("orders");
     const reviewCollection = database.collection("review");
+    const usersCollection = database.collection("users");
 
     //GET API
     app.get("/products", async (req, res) => {
@@ -52,7 +53,6 @@ async function run() {
       console.log("hit the post api", product);
 
       const result = await productCollection.insertOne(product);
-      console.log(result);
       res.json(result);
     });
 
@@ -67,7 +67,6 @@ async function run() {
     app.get("/orders", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
-      console.log(query);
       const cursor = orderCollection.find(query);
       const orders = await cursor.toArray();
       res.json(orders);
@@ -87,11 +86,50 @@ async function run() {
       res.send(review);
     });
 
+    //Post Users API
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      console.log(result);
+      res.json(result);
+    });
+
+    //Make admin
+    app.put("/users", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const filter = { email: user.email };
+      const updateDoc = { $set: { role: "admin" } };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.json(result);
+    });
+
+    //get user data
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      console.log("user", user);
+      let isAdmin = false;
+      if (user.role === "admin") {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
+
     //DELETE API
     app.delete("/orders/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    //DELETE API
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productCollection.deleteOne(query);
       res.json(result);
     });
   } finally {
